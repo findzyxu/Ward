@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Uptime Display Test</title>
+    <style>
+        body {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+        .test-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .test-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .uptime {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(45deg, #667eea 0%, #f093fb 50%, #4facfe 100%);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .uptime-rectangle-grid {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .uptime-rectangle-grid.initialized {
+            opacity: 1;
+        }
+
+        .values-grid {
+            white-space: nowrap;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .values-grid > div {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 2px;
+            height: 51px;
+            width: 60px;
+            text-align: center;
+            font-size: 2.625em;
+            font-weight: bold;
+            color: #333;
+            background: rgba(255, 255, 255, 0.7);
+            white-space: nowrap;
+            overflow: visible;
+            box-sizing: border-box;
+            border-radius: 5px;
+            transition: font-size 0.3s ease, width 0.3s ease;
+        }
+        
+        .values-grid > div > p {
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+        }
+
+        /* 当天数是短数字时，所有数字正常大小 */
+        .values-grid.short-mode > div {
+            font-size: 2.625em;
+            width: 60px;
+        }
+
+        /* 当天数是中等数字时，所有数字稍小 */
+        .values-grid.medium-mode > div {
+            font-size: 2.0em;
+            width: 60px;
+        }
+        
+        .values-grid.medium-mode > div:first-child {
+            width: 80px;
+        }
+
+        /* 当天数是长数字时，所有数字更小 */
+        .values-grid.long-mode > div {
+            font-size: 1.8em;
+            width: 60px;
+        }
+        
+        .values-grid.long-mode > div:first-child {
+            width: 96px;
+        }
+
+        .labels-grid {
+            white-space: nowrap;
+            display: block;
+        }
+
+        .labels-grid > div {
+            display: inline-block;
+            margin-right: 2px;
+            margin-bottom: 5px;
+            height: 13px;
+            width: 60px;
+            text-align: center;
+            font-size: 0.563em;
+            font-weight: normal;
+            color: #666;
+            background: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+            border-radius: 3px;
+            line-height: 13px;
+            transition: width 0.3s ease;
+        }
+
+        /* 标签跟随值的大小 */
+        .labels-grid.short-mode > div {
+            width: 60px;
+        }
+
+        .labels-grid.medium-mode > div {
+            width: 60px;
+        }
+        
+        .labels-grid.medium-mode > div:first-child {
+            width: 80px;
+        }
+
+        .labels-grid.long-mode > div {
+            width: 60px;
+        }
+        
+        .labels-grid.long-mode > div:first-child {
+            width: 96px;
+        }
+
+        .test-cases {
+            margin-top: 20px;
+        }
+
+        .test-case {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .test-case-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-title">Ward Uptime Display Test</div>
+        
+        <div class="uptime">
+            <div class="uptime-rectangle-grid">
+                <div class="values-grid long-mode">
+                    <div id="days"><p id="uptime-days">1001</p></div>
+                    <div id="hours"><p id="uptime-hours">12</p></div>
+                    <div id="minutes"><p id="uptime-minutes">00</p></div>
+                    <div id="seconds"><p id="uptime-seconds">00</p></div>
+                </div>
+                <div class="labels-grid long-mode">
+                    <div id="days-label">DAYS</div>
+                    <div>HOURS</div>
+                    <div>MINUTES</div>
+                    <div>SECONDS</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-cases">
+            <div class="test-case-title">测试不同天数的显示效果：</div>
+            <button onclick="testUptime(12, 53, 15, 19)">12天 (正常)</button>
+            <button onclick="testUptime(99, 23, 59, 59)">99天 (临界)</button>
+            <button onclick="testUptime(100, 0, 0, 0)">100天 (中等)</button>
+            <button onclick="testUptime(365, 12, 30, 45)">365天 (一年)</button>
+            <button onclick="testUptime(999, 23, 59, 59)">999天 (临界)</button>
+            <button onclick="testUptime(1000, 0, 0, 0)">1000天 (长)</button>
+            <button onclick="testUptime(1001, 12, 0, 0)">1001天 (当前)</button>
+            <button onclick="testUptime(9999, 23, 59, 59)">9999天 (极限)</button>
+        </div>
+    </div>
+
+    <script>
+        function testUptime(days, hours, minutes, seconds) {
+            // 更新显示值
+            document.getElementById('uptime-days').textContent = days;
+            document.getElementById('uptime-hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('uptime-minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('uptime-seconds').textContent = String(seconds).padStart(2, '0');
+
+            // 获取容器元素
+            let valuesGrid = document.querySelector('.values-grid');
+            let labelsGrid = document.querySelector('.labels-grid');
+
+            // 移除现有类
+            valuesGrid.classList.remove('short-mode', 'medium-mode', 'long-mode');
+            labelsGrid.classList.remove('short-mode', 'medium-mode', 'long-mode');
+
+            // 根据天数为整个容器添加对应的类
+            if (days >= 1000) {
+                valuesGrid.classList.add('long-mode');
+                labelsGrid.classList.add('long-mode');
+            } else if (days >= 100) {
+                valuesGrid.classList.add('medium-mode');
+                labelsGrid.classList.add('medium-mode');
+            } else {
+                valuesGrid.classList.add('short-mode');
+                labelsGrid.classList.add('short-mode');
+            }
+        }
+
+        // 页面加载时应用1001天的样式
+        window.onload = function() {
+            testUptime(1001, 12, 0, 0);
+            // Show the uptime display
+            document.querySelector('.uptime-rectangle-grid').classList.add('initialized');
+        };
+    </script>
+</body>
+</html>
